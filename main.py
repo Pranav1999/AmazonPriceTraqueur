@@ -24,7 +24,7 @@ def get_proxy_list(user_agent_list):
     url = "https://free-proxy-list.net/"
     user_agent = random.choice(user_agent_list)
     headers = {'User-Agent': user_agent}
-    source = requests.get(url, headers = headers).text
+    source = requests.get(url, headers=headers).text
     soup = BeautifulSoup(source, "lxml")
     proxy_list_table = soup.select("#proxylisttable")
     proxy_list_table = proxy_list_table[0]
@@ -68,8 +68,11 @@ def get_info(source):
     soup = BeautifulSoup(source, "lxml")
 
     # get title
-    product_title = soup.select('#productTitle')
-    product_title = str.strip(product_title[0].text)
+    try:
+        product_title = soup.select('#productTitle')
+        product_title = str.strip(product_title[0].text)
+    except:
+        return ["Page not found", "Page not found"]
 
     # get price
     # this looks like bad programming, will keep an eye on it in future
@@ -87,14 +90,14 @@ def get_info(source):
                 product_price = product_price[0].select(".a-color-price")
                 product_price = str.strip(product_price[0].text)
             except:
-                pass
+                product_price = "Currently unavailable"
 
     return [product_title, product_price]
 
 
 if __name__ == "__main__":
     base_url = "https://www.amazon.in/dp/"
-    asin_list = ["B01EU2M62S", "B07DDB1ZN1", "B07JCSNXJ6"]
+    asin_list = ["B01EU2M62S", "B07DDB1ZN1", "B07JCSNXJ6", "B07BWM6BZM", "B01FVT3LWI", "B01EWV6BGE"]
     user_agent_list = get_user_agent_list()
     proxy_list = get_proxy_list(user_agent_list)
     for asin in asin_list:
