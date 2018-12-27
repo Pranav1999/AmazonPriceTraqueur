@@ -1,6 +1,31 @@
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 import requests
 from bs4 import BeautifulSoup
 import random
+
+
+def send_email(message):
+    # s = smtplib.SMTP(host="smtp.gmail.com", port="587")
+    s = smtplib.SMTP(host="mailing_server", port="port")
+    s.starttls()
+
+    try:
+        s.login("sender@mail.com", "sender_mail_password")
+    except:
+        print("Authentication failure, check ID/Password for mistake or check your account for third party authentication")
+        return
+
+    msg = MIMEMultipart()
+    msg['From'] = "sender@mail.com"
+    msg['To'] = "receiver@mail.com"
+    msg['Subject'] = "price <= threshold"
+    msg.attach(MIMEText(message, 'plain'))
+
+    s.send_message(msg)
+    s.quit()
+    print("Email sent successfully")
 
 
 # returns a list of user agents
@@ -22,14 +47,17 @@ def get_user_agent_list():
 # scrape and gets ip proxy
 def get_proxy_list(user_agent_list):
     url = "https://free-proxy-list.net/"
+
     user_agent = random.choice(user_agent_list)
     headers = {'User-Agent': user_agent}
     source = requests.get(url, headers=headers).text
     soup = BeautifulSoup(source, "lxml")
+
     proxy_list_table = soup.select("#proxylisttable")
     proxy_list_table = proxy_list_table[0]
     proxy_list_table_body = proxy_list_table.select("tbody")[0]
     proxies = proxy_list_table_body.select("tr")
+
     proxy_list = list()
     for proxy in proxies:
         proxy_data = proxy.select("td")
@@ -76,7 +104,6 @@ def get_info(source):
 
     # get price
     # this looks like bad programming, will keep an eye on it in future
-    product_price = ""
     try:
         product_price = soup.select("#priceblock_saleprice")
         product_price = str.strip(product_price[0].text)
@@ -98,8 +125,10 @@ def get_info(source):
 if __name__ == "__main__":
     base_url = "https://www.amazon.in/dp/"
     asin_list = ["B01EU2M62S", "B07DDB1ZN1", "B07JCSNXJ6", "B07BWM6BZM", "B01FVT3LWI", "B01EWV6BGE"]
+
     user_agent_list = get_user_agent_list()
     proxy_list = get_proxy_list(user_agent_list)
+
     for asin in asin_list:
         source = get_source(base_url, asin, proxy_list, user_agent_list)
         print(get_info(source))
