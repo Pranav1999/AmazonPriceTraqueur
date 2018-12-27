@@ -3,45 +3,50 @@ from bs4 import BeautifulSoup
 import random
 
 
-# scrape and get ip proxy
-def get_proxy():
-    ''' IP:port from this website doesn't seem to work '''
-    # url = "https://free-proxy-list.net/"
-    # source = requests.get(url).text
-    # soup = BeautifulSoup(source, "lxml")
-    # proxy_list_table = soup.select("#proxylisttable")
-    # proxy_list_table = proxy_list_table[0]
-    # proxy_list_table_body = proxy_list_table.select("tbody")[0]
-    # proxies = proxy_list_table_body.select("tr")
-    # proxy_dict = dict()
-    # for proxy in proxies:
-    #     proxy_data = proxy.select("td")
-    #     ip = proxy_data[0].text
-    #     port = proxy_data[1].text
-    #     proxy_dict[ip] = port
-    #
-    # random_ip = random.choice(list(proxy_dict.keys()))
-    # proxy = "https://" + random_ip + ":" + proxy_dict.get(random_ip)
-    # print(proxy)
-    # return proxy
-    return "1.20.97.181:55701"
+# scrape and gets ip proxy
+def get_proxy_list():
+    url = "https://free-proxy-list.net/"
+    source = requests.get(url).text
+    soup = BeautifulSoup(source, "lxml")
+    proxy_list_table = soup.select("#proxylisttable")
+    proxy_list_table = proxy_list_table[0]
+    proxy_list_table_body = proxy_list_table.select("tbody")[0]
+    proxies = proxy_list_table_body.select("tr")
+    proxy_list = list()
+    for proxy in proxies:
+        proxy_data = proxy.select("td")
+        ip = proxy_data[0].text
+        port = proxy_data[1].text
+        proxy_list.append(ip + ":" + port)
+
+    return proxy_list
 
 
-# https://www.amazon.in/dp/B01EU2M62S
-def get_source(base_url, asin):
+# gets html code
+def get_source(base_url, asin, proxy_list):
     proxies = {
-        "http": get_proxy(),
-        "https": get_proxy()
+        "http": random.choice(proxy_list),
+        "https": random.choice(proxy_list)
     }
 
     user_agent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) ' \
                  'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.47 Safari/537.36'
     headers = {'User-Agent': user_agent}
 
-    source = requests.get(base_url + asin, proxies=proxies, headers=headers).text
+    while True:
+        try:
+            source = requests.get(base_url + asin, proxies=proxies, headers=headers).text
+            break
+        except:
+            proxies = {
+                "http": random.choice(proxy_list),
+                "https": random.choice(proxy_list)
+            }
+
     return source
 
 
+# gets product title and price from html
 def get_info(source):
     soup = BeautifulSoup(source, "lxml")
 
@@ -73,7 +78,8 @@ def get_info(source):
 if __name__ == "__main__":
     base_url = "https://www.amazon.in/dp/"
     asin_list = ["B01EU2M62S", "B07DDB1ZN1", "B07JCSNXJ6"]
+    proxy_list = get_proxy_list()
     for asin in asin_list:
-        source = get_source(base_url, asin)
+        source = get_source(base_url, asin, proxy_list)
         print(get_info(source))
         print()
