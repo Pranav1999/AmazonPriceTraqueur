@@ -7,20 +7,25 @@ import random
 import json
 
 
-def send_email(message):
-    s = smtplib.SMTP(host="mail_server_address", port="mail_server_port")
+def get_config():
+    with open("config.json") as f:
+        return json.load(f)
+
+
+def send_email(message, config_data):
+    s = smtplib.SMTP(host=config_data["email"]["mailing_server"], port=config_data["email"]["mailing_server_port"])
     s.starttls()
 
     try:
-        s.login("your@mail.com", "password")
+        s.login(config_data["email"]["user_id"], config_data["email"]["user_password"])
     except:
         print(
             "Authentication failure, check ID/Password for mistake or check your account for third party authentication")
         return
 
     msg = MIMEMultipart()
-    msg['From'] = "your@mail.com"
-    msg['To'] = "receiver@mail.com"
+    msg['From'] = config_data["email"]["user_id"]
+    msg['To'] = config_data["email"]["user_id"]
     msg['Subject'] = "price drop"
     msg.attach(MIMEText(message, 'plain'))
 
@@ -127,9 +132,9 @@ def get_info(source):
 
 
 if __name__ == "__main__":
-    base_url = "https://www.amazon.in/dp/"
-    # this list contains different type of pages, product available/unavailabe, page found/not found
-    asin_list = {"B01EU2M62S": 3200, "B07DDB1ZN1": 250, "B07JCSNXJ6": 460, "B07BWM6BZM": 100, "B01FVT3LWI": 100, "B01EWV6BGE": 100}
+    config_data = get_config()
+    base_url = config_data["base_url"]
+    asin_list = config_data["items"]
     user_agent_list = get_user_agent_list()
     proxy_list = get_proxy_list(user_agent_list)
 
@@ -142,8 +147,8 @@ if __name__ == "__main__":
         product_price = product_price.split('.')
         product_price = product_price[0]
         product_price = product_price.replace(',', '')
-        print(product_title, product_price)
         if product_price.isnumeric():
             if int(product_price) <= asin_list[asin]:
-                send_email(product_title + " is available at " + product_price + " bucks")
+                email_msg = product_title + " is available at " + product_price + " bucks"
+                send_email(email_msg, config_data)
         print()

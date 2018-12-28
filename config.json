@@ -6,9 +6,12 @@
     "user_password": "password"
   },
   "base_url": "https:www.amazon.in/dp/",
-  "items": [
-    "item1",
-    "item2",
-    "moreitems"
-  ]
+  "items": {
+    "B01EU2M62S": 3200,
+    "B07DDB1ZN1": 250,
+    "B07JCSNXJ6": 460,
+    "B07BWM6BZM": 100,
+    "B01FVT3LWI": 100,
+    "B01EWV6BGE": 100
+  }
 }
