@@ -4,23 +4,24 @@ from email.mime.text import MIMEText
 import requests
 from bs4 import BeautifulSoup
 import random
+import json
 
 
 def send_email(message):
-    # s = smtplib.SMTP(host="smtp.gmail.com", port="587")
-    s = smtplib.SMTP(host="mailing_server", port="port")
+    s = smtplib.SMTP(host="mail_server_address", port="mail_server_port")
     s.starttls()
 
     try:
-        s.login("sender@mail.com", "sender_mail_password")
+        s.login("your@mail.com", "password")
     except:
-        print("Authentication failure, check ID/Password for mistake or check your account for third party authentication")
+        print(
+            "Authentication failure, check ID/Password for mistake or check your account for third party authentication")
         return
 
     msg = MIMEMultipart()
-    msg['From'] = "sender@mail.com"
+    msg['From'] = "your@mail.com"
     msg['To'] = "receiver@mail.com"
-    msg['Subject'] = "price <= threshold"
+    msg['Subject'] = "price drop"
     msg.attach(MIMEText(message, 'plain'))
 
     s.send_message(msg)
@@ -124,12 +125,26 @@ def get_info(source):
 
 if __name__ == "__main__":
     base_url = "https://www.amazon.in/dp/"
-    asin_list = ["B01EU2M62S", "B07DDB1ZN1", "B07JCSNXJ6", "B07BWM6BZM", "B01FVT3LWI", "B01EWV6BGE"]
+    # this list contains different type of pages, product available/unavailabe, page found/not found
+    asin_list = {"B01EU2M62S": 3200, "B07DDB1ZN1": 250, "B07JCSNXJ6": 460, "B07BWM6BZM": 100, "B01FVT3LWI": 100,
+                 "B01EWV6BGE": 100}
 
     user_agent_list = get_user_agent_list()
     proxy_list = get_proxy_list(user_agent_list)
 
     for asin in asin_list:
         source = get_source(base_url, asin, proxy_list, user_agent_list)
-        print(get_info(source))
+        info = get_info(source)
+        print(info)
+        product_title = info[0]
+        product_price = info[1]
+        product_price = product_price.split('.')
+        product_price = product_price[0]
+        product_price = product_price.replace(',', '')
+        print(product_title, product_price)
+        if product_price.isnumeric():
+            print(1)
+            if int(product_price) <= asin_list[asin]:
+                print(1)
+                send_email(product_title + " is available at " + product_price + " bucks")
         print()

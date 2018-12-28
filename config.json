@@ -1,0 +1,14 @@
+{
+  "email": {
+    "mailing_server" : "server_address",
+    "mailing_server_port": "server_port",
+    "user_id": "sender@mail.com",
+    "user_password": "password"
+  },
+  "base_url": "https:www.amazon.in/dp/",
+  "items": [
+    "item1",
+    "item2",
+    "moreitems"
+  ]
+}
