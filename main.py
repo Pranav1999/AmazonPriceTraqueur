@@ -82,6 +82,9 @@ def get_source(base_url, asin, proxy_list, user_agent_list):
     while True:
         try:
             source = requests.get(base_url + asin, proxies=proxies, headers=headers).text
+            if source.find("captcha") > 0:
+                raise Exception("Captcha encountered")
+
             break
         except:
             proxies = {
@@ -126,9 +129,7 @@ def get_info(source):
 if __name__ == "__main__":
     base_url = "https://www.amazon.in/dp/"
     # this list contains different type of pages, product available/unavailabe, page found/not found
-    asin_list = {"B01EU2M62S": 3200, "B07DDB1ZN1": 250, "B07JCSNXJ6": 460, "B07BWM6BZM": 100, "B01FVT3LWI": 100,
-                 "B01EWV6BGE": 100}
-
+    asin_list = {"B01EU2M62S": 3200, "B07DDB1ZN1": 250, "B07JCSNXJ6": 460, "B07BWM6BZM": 100, "B01FVT3LWI": 100, "B01EWV6BGE": 100}
     user_agent_list = get_user_agent_list()
     proxy_list = get_proxy_list(user_agent_list)
 
@@ -143,8 +144,6 @@ if __name__ == "__main__":
         product_price = product_price.replace(',', '')
         print(product_title, product_price)
         if product_price.isnumeric():
-            print(1)
             if int(product_price) <= asin_list[asin]:
-                print(1)
                 send_email(product_title + " is available at " + product_price + " bucks")
         print()
