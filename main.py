@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -5,10 +6,12 @@ import requests
 from bs4 import BeautifulSoup
 import random
 import json
+import os
 
 
 def get_config():
-    with open("config.json") as f:
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    with open(dir_path + "/config.json") as f:
         return json.load(f)
 
 
@@ -56,7 +59,11 @@ def get_proxy_list(user_agent_list):
 
     user_agent = random.choice(user_agent_list)
     headers = {'User-Agent': user_agent}
-    source = requests.get(url, headers=headers).text
+    try:
+        source = requests.get(url, headers=headers).text
+    except:
+        print("Connection Error")
+        exit(0)
     soup = BeautifulSoup(source, "lxml")
 
     proxy_list_table = soup.select("#proxylisttable")
@@ -147,7 +154,7 @@ if __name__ == "__main__":
         product_price = product_price.split('.')
         product_price = product_price[0]
         product_price = product_price.replace(',', '')
-        if product_price.isnumeric():
+        if product_price.isdigit():
             if int(product_price) <= asin_list[asin]:
                 email_msg = product_title + " is available at " + product_price + " bucks"
                 send_email(email_msg, config_data)
