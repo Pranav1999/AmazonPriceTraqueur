@@ -154,6 +154,7 @@ if __name__ == "__main__":
         print(info)
 
         log = info.copy()
+        log.append(str(asin_list[asin]))
 
         product_title = info[0]
         product_price = info[1]
@@ -177,5 +178,5 @@ if __name__ == "__main__":
 
         logs_dict[asin] = log
 
-    with open("AmazonPriceTraqueur.json", "w") as log_file:
+    with open("AmazonPriceTraqueurLog.json", "w") as log_file:
         json.dump(logs_dict, log_file)
