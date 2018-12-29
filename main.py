@@ -24,7 +24,7 @@ def send_email(message, config_data):
     except:
         print(
             "Authentication failure, check ID/Password for mistake or check your account for third party authentication")
-        return
+        return -1
 
     msg = MIMEMultipart()
     msg['From'] = config_data["email"]["user_id"]
@@ -35,6 +35,7 @@ def send_email(message, config_data):
     s.send_message(msg)
     s.quit()
     print("Email sent successfully")
+    return 0
 
 
 # returns a list of user agents
@@ -145,10 +146,15 @@ if __name__ == "__main__":
     user_agent_list = get_user_agent_list()
     proxy_list = get_proxy_list(user_agent_list)
 
+    logs_dict = dict()
+
     for asin in asin_list:
         source = get_source(base_url, asin, proxy_list, user_agent_list)
         info = get_info(source)
         print(info)
+
+        log = info.copy()
+
         product_title = info[0]
         product_price = info[1]
         product_price = product_price.split('.')
@@ -157,5 +163,19 @@ if __name__ == "__main__":
         if product_price.isdigit():
             if int(product_price) <= asin_list[asin]:
                 email_msg = product_title + " is available at " + product_price + " bucks"
-                send_email(email_msg, config_data)
-        print()
+                email_status = send_email(email_msg, config_data)
+                if email_status == 0:
+                    log.append("email successful")
+                else:
+                    log.append("email unsuccessful")
+
+            else:
+                log.append("email not sent")
+
+        else:
+            log.append("email not sent")
+
+        logs_dict[asin] = log
+
+    with open("AmazonPriceTraqueur.json", "w") as log_file:
+        json.dump(logs_dict, log_file)
