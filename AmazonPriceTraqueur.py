@@ -7,6 +7,7 @@ from bs4 import BeautifulSoup
 import random
 import json
 import os
+import subprocess
 
 
 def get_config():
@@ -180,3 +181,6 @@ if __name__ == "__main__":
 
     with open("AmazonPriceTraqueurLog.json", "w") as log_file:
         json.dump(logs_dict, log_file)
+
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    subprocess.Popen(["xterm", "-geometry", "500x100", "-hold", "-e", "python " + dir_path + "/print_logs.py"])
